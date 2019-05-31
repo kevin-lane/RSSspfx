@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "rss-app-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/rssApp/RssAppWebPart.js",
+          "manifest": "./src/webparts/rssApp/RssAppWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "RssAppWebPartStrings": "lib/webparts/rssApp/loc/{locale}.js"
+  }
+}

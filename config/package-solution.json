@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "rss-app-client-side-solution",
+    "id": "93c40a5b-f168-428a-a13c-be99e2ec3590",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true
+  },
+  "paths": {
+    "zippedPackage": "solution/rss-app.sppkg"
+  }
+}
