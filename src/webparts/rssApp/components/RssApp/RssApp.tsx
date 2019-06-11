@@ -3,10 +3,12 @@ import styles from '../RssApp.module.scss';
 import { IRssAppProps } from './IRssAppProps';
 import {IRssItem} from './IRssAppState'
 
-import { PrimaryButton, BasePeopleSelectedItemsList } from 'office-ui-fabric-react';
+
+import { PrimaryButton, ColorPicker } from 'office-ui-fabric-react';
 import { DefaultButton } from 'office-ui-fabric-react/lib/Button';
 import { Panel, PanelType } from 'office-ui-fabric-react/lib/Panel';
 import { Slider } from 'office-ui-fabric-react/lib/Slider';
+
 
 export default class RssApp extends React.Component<IRssAppProps, any> {
   constructor(props: IRssAppProps){
@@ -17,9 +19,9 @@ export default class RssApp extends React.Component<IRssAppProps, any> {
         description: '',
         author: '',
         showPanel: false,
-        numberOfNewsItems: 20
+        url: '',
+        numberOfNewsItems: 7
     };
-    
   }
 
   public showSomeXML(){
@@ -33,27 +35,33 @@ export default class RssApp extends React.Component<IRssAppProps, any> {
           let newsFeedElementsArray: IRssItem[] = []; //an array to push
           let allItems = xhttp.responseXML.getElementsByTagName('item').length;
           /**For loop iterating over items (i.e. all news article items) */
-          for(let i = 0; i < allItems; i++){
+          for(let i = 0; i < this.state.numberOfNewsItems; i++){
 
              let heading = xhttp.responseXML.getElementsByTagName('item')[i].children[3].innerHTML; //title
              let intro = xhttp.responseXML.getElementsByTagName('item')[i]
                               .children[4].innerHTML
-                              .replace("<![CDATA[", "")
-                              .replace("]]", "").replace(/<[^>]*>/g, '');
+                              .replace("<![CDATA[", "").replace(/<[^>]*>/g, '').replace("&nbsp;", "")
+                              .replace("]]", "").replace(">", "").substr(0, 100);
+                               //
              let author = xhttp.responseXML.getElementsByTagName('item')[i].children[2].innerHTML;
-            /***Showing in the console */
+             let link = xhttp.responseXML.getElementsByTagName('item')[i].children[1].innerHTML;
+           
+             /***Showing in the console */
              console.log("Title: " + heading);
              console.log("Description: " + xhttp.responseXML.getElementsByTagName('item')[i]
-                          .children[4].innerHTML.replace("<![CDATA[", "").replace("]]", ""));
+                          .children[4].innerHTML.replace("<![CDATA[", "").replace("&nbsp;", "").replace("]]", ""));
              console.log("Author: " + xhttp.responseXML.getElementsByTagName('item')[i].children[2].innerHTML);   
-             
+             console.log("URL: " + link);
+             console.log("Desc length: " + intro.length);
+
               //Push all content to array and set them to state
             newsFeedElementsArray.push({
                   title: heading,
                   description: intro,
                   author: author,
                   showPanel: false,
-                  numberOfNewsItems: 3
+                  url: link,
+                  numberOfNewsItems: null
             });
             
           }  
@@ -63,14 +71,16 @@ export default class RssApp extends React.Component<IRssAppProps, any> {
                   items: newsFeedElementsArray //Newly added
                 });
                 console.log("News items: " + xhttp.responseXML.getElementsByTagName('item').length);
-                console.log(xhttp.responseXML.getElementsByTagName('item')[1].children);
+                console.log(xhttp.responseXML.getElementsByTagName('item')[1].childNodes);
                 console.log(this.state.items);
                 console.log("How many items: " + this.state.items.length);
+                console.log(xhttp.responseXML.getElementsByTagName('item'));
         }
 
       };
       xhttp.open("GET", 'https://feeds.expressen.se/nyheter/', true);
       xhttp.send();
+
   }
 
 
@@ -84,15 +94,17 @@ export default class RssApp extends React.Component<IRssAppProps, any> {
 
              
         let newsFeedElementsArray: IRssItem[] = []; //an array to push
-
+        
 
         for(let i = 0; i < this.state.numberOfNewsItems; i++){
           let heading = xhttp.responseXML.getElementsByTagName('item')[i].children[3].innerHTML; //title
           let intro = xhttp.responseXML.getElementsByTagName('item')[i]
-                              .children[4].innerHTML
-                              .replace("<![CDATA[", "")
-                              .replace("]]", "").replace(/<[^>]*>/g, '');
+          .children[4].innerHTML
+          .replace("<![CDATA[", "").replace(/<[^>]*>/g, '').replace("&nbsp;", "")
+          .replace("]]", "").replace(">", "").substr(0, 100);
+                             
           let author = xhttp.responseXML.getElementsByTagName('item')[i].children[2].innerHTML;
+          let link = xhttp.responseXML.getElementsByTagName('item')[i].children[1].innerHTML;
         
         this.setState({
             showPanel: false,
@@ -104,30 +116,63 @@ export default class RssApp extends React.Component<IRssAppProps, any> {
                 description: intro,
                 author: author,
                 showPanel: false,
+                url: link,
                 numberOfNewsItems: value
           });
+
+          if(intro.length > 20){
+            let ending = '...';
+            intro.slice(0, intro.length - 10);
+          }
         }
         console.log("News items to display: " + this.state.numberOfNewsItems); 
         console.log("News items to display??: " + this.state.items);
         console.log("How many items after change: " + this.state.items.length);
+        console.log(this.state.description);
         }
       };
         xhttp.open("GET", 'https://feeds.expressen.se/nyheter/', true);
         xhttp.send();
-
-        
     }
 
   public render(): React.ReactElement<IRssAppProps> {
+
+    //**Styling variables */
+    const rssStyle = {
+      backgroundColor: '#b5fffc', 
+      padding: '25px'
+    }
+    const columnStyle = {
+      backgroundColor: '#46b0fc',
+      padding: '10px',
+      borderRadius: '30px' 
+    }
+    const titleStyle = {
+      //{fontSize: '30px', color:'white'}
+      fontSize: '20px',
+      color: 'black',
+      textDecoration: 'none'
+    };
+    const descriptionStyle = {
+      color: 'black',
+      
+      textOverflow: 'ellipsis'
+    }
     let newsElement = (element: IRssItem)=> { //Newly added
         return (
-              <div className={ styles.row }>
-                  <div className={styles.title}>{element.title}</div>
-                  <div className={ styles.description }>{element.description}</div>
-                  <div>{element.author}</div>
+              <div style={rssStyle}>
+                <div style={columnStyle}>
+    
+                    <a href={element.url} className={styles.myTitle} style={titleStyle} target='_blank'>{element.title}</a>
+                    <div className={ styles.description } style={descriptionStyle}>{element.description}</div>
+             
+                    <div>{element.author}</div>
+                    {/* <div>{element.url}</div> */}
+                </div>
+               
               </div>
         );
-    };//Newly added
+    };
 
     //**Settings side panel  */
     let settingsPanel = (
@@ -145,14 +190,15 @@ export default class RssApp extends React.Component<IRssAppProps, any> {
         <Slider
           label="How many news do you want to display?"
           min={1}
-          max={20}
+          max={10}
           step={1}
           value={this.state.numberOfNewsItems}
           showValue={true}
-          onChange={value => { 
+          onChange={value => 
+            { 
             this.setState({
               numberOfNewsItems: value})
-           }
+          }
           }
         />
           <span>{"News items to display: " + this.state.numberOfNewsItems}</span>
@@ -161,7 +207,8 @@ export default class RssApp extends React.Component<IRssAppProps, any> {
   );
 
     return (
-      <div className = {styles.column}>
+      <div className={styles.rssApp}>
+        <div className = {styles.column}>
          
           <DefaultButton
             data-automation-id="test"
@@ -170,8 +217,8 @@ export default class RssApp extends React.Component<IRssAppProps, any> {
           /> 
           {this.state.items.map(newsElement)}
           {settingsPanel}
+        </div>
       </div>
-      
       
     );
   }

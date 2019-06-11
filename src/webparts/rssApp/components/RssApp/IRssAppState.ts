@@ -4,6 +4,7 @@ export interface IRssItem{
     author: string;
     showPanel: boolean;
     numberOfNewsItems: number;
+    url: string;
 }
 
 //export interface 
